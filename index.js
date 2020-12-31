@@ -1,7 +1,7 @@
 const { Console } = require('console')
 const Discord = require('discord.js')
 const client = new Discord.Client()
-const {prefix, token} = require('./config.json')
+const {prefix, token, applicationURL} = require('./config.json')
 
 // Setup for vars and array. Note that everything is using their ids
 let authTokens = []
@@ -9,6 +9,7 @@ let memberRole = '726562209617936414'
 let applicationChannel = '751744956678275172'
 let staffRole = '740544739773775882'
 let staffChannel = '751095498974167161'
+let reactionEmojis = ['780549171089637376', '780549170770870292', '780548158068621355'] // Agree, disagree, neutral
 
 client.login(token)
 
@@ -26,9 +27,9 @@ client.on('message', async message => {
     if(message.channel == applicationChannel) {
         var attemptedAuthToken = message.embeds[0].fields[0].value.toString()
         if(authTokens.includes(attemptedAuthToken) && (message.webhookID != null)) {
-        await message.react('780549171089637376') // These 3 are for voting, remove them if you do not want them.
-        await message.react('780549170770870292')
-        await message.react('780548158068621355')
+        await message.react(reactionEmojis[0]) // These 3 are for voting, remove them if you do not want them.
+        await message.react(reactionEmojis[1])
+        await message.react(reactionEmojis[2])
         authTokens = authTokens.filter(attemptedAuthToken)
         message.guild.channels.cache.get(staffChannel).send(`User ${message.embeds[0].fields[1].value} applied using token ${attemptedAuthToken}`)
         } else {
@@ -48,7 +49,7 @@ client.on('message', async message => {
         authTokens.push(newAuthToken)
         const embed = new Discord.MessageEmbed()
             .setTitle('Click here to apply!')
-            .setURL('https://docs.google.com/forms/d/e/1FAIpQLSfPSH-lkRLUwrPMtIoz1zibs0YwQyVKA_uDHGSGnHfCf7DdhA/viewform?usp=pp_url&entry.2046443512=' + newAuthToken)
+            .setURL(applicationURL + newAuthToken)
             .setDescription('Authentication token is included in the URL, your application will not work without it.')
             .setColor(0xff7f50)
             .setFooter(message.author.tag, message.author.avatarURL());
