@@ -1,24 +1,23 @@
 const { Console } = require('console')
 const Discord = require('discord.js')
+const ms = require('ms.js')
 const client = new Discord.Client()
-const {prefix, token, applicationURL} = require('./config.json')
+const {prefix, token, applicationURL, memberRole, applicationChannel, staffChannel, pollChannel} = require('./config.json')
 
 // Setup for vars and array. Note that everything is using their ids
 let authTokens = []
-let memberRole = '726562209617936414'
-let applicationChannel = '751744956678275172'
-let staffRole = '740544739773775882'
-let staffChannel = '751095498974167161'
 let reactionEmojis = ['780549171089637376', '780549170770870292', '780548158068621355'] // Agree, disagree, neutral
+var pollChannel = '732532349107175474'
 
 client.login(token)
 
-// Startup, dms Owner of the bot that it is online
+// Startup, dms Owner of the bot that it is online, sets activity
 client.on('ready', async () => {
     const embed = new Discord.MessageEmbed()
         .setDescription(`${client.user.tag} is online!`);
     let owner = await client.users.fetch('213585513326706690')
     owner.send(embed)
+    client.user.setActivity('over Khaos Applications', { type : "WATCHING" })
 });
 
 client.on('message', async message => {
@@ -51,7 +50,7 @@ client.on('message', async message => {
             .setTitle('Click here to apply!')
             .setURL(applicationURL + newAuthToken)
             .setDescription('Authentication token is included in the URL, your application will not work without it.')
-            .setColor(0xff7f50)
+            .setColor(0x00ff40)
             .setFooter(message.author.tag, message.author.avatarURL());
         const embed2 = new Discord.MessageEmbed()
         .setTitle('New Token Generated!')
@@ -62,8 +61,31 @@ client.on('message', async message => {
         message.guild.channels.cache.get(staffChannel).send(embed2)
     }
 
-    if(command == 'removetoken' && message.member.roles.cache.get(staffRole)) {
+    // Remove Auth Tokens if needed
+    if(command == 'removetoken' && message.member.hasPermission('MANAGE_GUILD')) {
         authTokens = authTokens.filter(args[0])
         message.guild.channels.cache.get(staffChannel).send(`Removed token ${args[0]}`)
+    }
+
+    // Poll command, remind me to add multiple choice option to it too
+    if(command == 'poll' && message.member.roles.cache.get(memberRole)) {
+        message.delete().catch()
+        if(!args[1]) return message.channel.send(`Please use a valid format! (${prefix}poll [time] [Poll question]`).then(msg => {msg.delete(10000)})
+        var pollTime = ms(args[0])
+        if(pollTime > 604800000) return message.channel.send('Please select a smaller poll time.') // Checks if pull time is less than 7 days
+        var pollQuestion = args.slice(1).join(' ')
+        const embed = new Discord.MessageEmbed()
+            .setTitle(pollQuestion)
+            .setColor(0x8DEEEE)
+            .setFooter(message.author.username, message.author.avatarURL())
+
+        // Send poll message, react and handle the results on poll end
+        var poll = await message.guild.channels.cache.get(pollChannel).send(embed)
+        await poll.react(reactionEmojis[0])
+        await poll.react(reactionEmojis[1])
+        await poll.react(reactionEmojis[2])
+        const filter = r => r.emoji.id === reactionEmojis[0]
+        const collector = poll.createReactionCollector(filter, {time: pollTime})
+        
     }
 });
