@@ -1,13 +1,13 @@
 const { Console } = require('console')
 const Discord = require('discord.js')
-const ms = require('ms.js')
+const ms = require('ms')
 const client = new Discord.Client()
 const {prefix, token, applicationURL, memberRole, applicationChannel, staffChannel, pollChannel} = require('./config.json')
 
 // Setup for vars and array. Note that everything is using their ids
 let authTokens = []
 let reactionEmojis = ['780549171089637376', '780549170770870292', '780548158068621355'] // Agree, disagree, neutral
-var pollChannel = '732532349107175474'
+
 
 client.login(token)
 
@@ -18,6 +18,7 @@ client.on('ready', async () => {
     let owner = await client.users.fetch('213585513326706690')
     owner.send(embed)
     client.user.setActivity('over Khaos Applications', { type : "WATCHING" })
+    console.log('Bot is up and running!')
 });
 
 client.on('message', async message => {
@@ -78,14 +79,34 @@ client.on('message', async message => {
             .setTitle(pollQuestion)
             .setColor(0x8DEEEE)
             .setFooter(message.author.username, message.author.avatarURL())
+            .setTimestamp();
 
         // Send poll message, react and handle the results on poll end
         var poll = await message.guild.channels.cache.get(pollChannel).send(embed)
         await poll.react(reactionEmojis[0])
         await poll.react(reactionEmojis[1])
         await poll.react(reactionEmojis[2])
-        const filter = r => r.emoji.id === reactionEmojis[0]
-        const collector = poll.createReactionCollector(filter, {time: pollTime})
+        const collector = poll.createReactionCollector((reaction, user) => reaction.id == reactionEmojis[0] || reactionEmojis[1] || reactionEmojis[2], {time: pollTime})
+        collector.on('end', collected => {
+            let agree = collected.filter(reaction => reaction.emoji.id == reactionEmojis[0]).size
+            let disagree = collected.filter(reaction => reaction.emoji.id == reactionEmojis[1]).size
+            let neutral = collected.filter(reaction => reaction.emoji.id == reactionEmojis[2]).size
+            let winner;
+            console.log(`${agree} ${disagree} ${neutral}`)
+            if(agree > disagree) { winner = 'The majority agrees!' }
+            if(agree < disagree) { winner = 'The majority disagrees!'}
+            if(agree == disagree) { winner = 'It is a tie!'}
+            const editembed = new Discord.MessageEmbed()
+                .setTitle(`${pollQuestion} (Over!)`)
+                .setColor(0x721111)
+                .addField(winner, `${agree}/${disagree + agree} people agrees.`)
+                .setDescription(`${agree} people agree, ${disagree} people disagree and ${neutral} passed on this vote.`)
+                .setFooter(message.author.username, message.author.avatarURL())
+                .setTimestamp();
+            poll.edit(editembed)
+            poll.reactions.removeAll().catch();
+            // Please help me
+        })
         
     }
 });
