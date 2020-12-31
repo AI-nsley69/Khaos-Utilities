@@ -76,7 +76,7 @@ client.on('message', async message => {
         if(pollTime > 604800000) return message.channel.send('Please select a smaller poll time.') // Checks if pull time is less than 7 days
         var pollQuestion = args.slice(1).join(' ')
         const embed = new Discord.MessageEmbed()
-            .setTitle(pollQuestion)
+            .setTitle(pollQuestion + ` (Ends in ${args[0]})`)
             .setColor(0x8DEEEE)
             .setFooter(message.author.username, message.author.avatarURL())
             .setTimestamp();
@@ -92,7 +92,6 @@ client.on('message', async message => {
             let disagree = collected.filter(reaction => reaction.emoji.id == reactionEmojis[1]).size
             let neutral = collected.filter(reaction => reaction.emoji.id == reactionEmojis[2]).size
             let winner;
-            console.log(`${agree} ${disagree} ${neutral}`)
             if(agree > disagree) { winner = 'The majority agrees!' }
             if(agree < disagree) { winner = 'The majority disagrees!'}
             if(agree == disagree) { winner = 'It is a tie!'}
