@@ -25,8 +25,6 @@ client.on('message', async message => {
     // Checks if webhook, valid auth token, is from #applications channel, otherwise deletes message. if those are true, then add reactions
     if(message.channel == applicationChannel) {
         var attemptedAuthToken = message.embeds[0].fields[0].value.toString()
-        console.log(attemptedAuthToken)
-        console.log(authTokens.includes(attemptedAuthToken))
         if(authTokens.includes(attemptedAuthToken) && (message.webhookID != null)) {
         await message.react('780549171089637376') // These 3 are for voting, remove them if you do not want them.
         await message.react('780549170770870292')
@@ -48,7 +46,6 @@ client.on('message', async message => {
         var newAuthToken = require('crypto').randomBytes(32).toString('hex')
         if(authTokens.includes(newAuthToken)) return;
         authTokens.push(newAuthToken)
-        console.log(authTokens)
         const embed = new Discord.MessageEmbed()
             .setTitle('Click here to apply!')
             .setURL('https://docs.google.com/forms/d/e/1FAIpQLSfPSH-lkRLUwrPMtIoz1zibs0YwQyVKA_uDHGSGnHfCf7DdhA/viewform?usp=pp_url&entry.2046443512=' + newAuthToken)
