@@ -44,8 +44,10 @@ client.on('message', async message => {
 
     // Apply command, will generate an authentication token and a prefilled link including it as an answer, wont work if author doesnt have member role
     if(command == 'apply' && message.member.roles.cache.get(memberRole)) {
+
+        // Generate new auth token, if it already exists make a new one, then push to array with auth tokens and setup embeds which gets sent.
         var newAuthToken = require('crypto').randomBytes(32).toString('hex')
-        if(authTokens.includes(newAuthToken)) return;
+        if(authTokens.includes(newAuthToken)) { newAuthToken = require('crypto').randomBytes(32).toString('hex') }
         authTokens.push(newAuthToken)
         const embed = new Discord.MessageEmbed()
             .setTitle('Click here to apply!')
@@ -70,6 +72,8 @@ client.on('message', async message => {
 
     // Poll command, remind me to add multiple choice option to it too, only works with member role
     if(command === 'poll' && message.member.roles.cache.get(memberRole)) {
+
+        // Delete message and do check for arguments, setup & check time and create embed for question.
         message.delete().catch()
         if(!args[1]) return message.channel.send(`Please use a valid format! (${prefix}poll [time] [Poll question]`).then(msg => {msg.delete(10000)})
         var pollTime = ms(args[0])
@@ -89,10 +93,14 @@ client.on('message', async message => {
         const collector = poll.createReactionCollector((reaction, user) => reaction.id == reactionEmojis[0] || reactionEmojis[1] || reactionEmojis[2], {time: pollTime})
         poll.edit(embed.setTitle(pollQuestion + `(Ends in ${args[0]})`))
         collector.on('end', collected => {
+
+            // Filtering the collected reactions to determine the majority's opinion
             let agree = collected.filter(reaction => reaction.emoji.id == reactionEmojis[0]).size
             let disagree = collected.filter(reaction => reaction.emoji.id == reactionEmojis[1]).size
             let neutral = collected.filter(reaction => reaction.emoji.id == reactionEmojis[2]).size
             let winner;
+
+            // Check winner then edit the poll question to announce it.
             if(agree > disagree) { winner = 'The majority agrees!' }
             if(agree < disagree) { winner = 'The majority disagrees!'}
             if(agree == disagree) { winner = 'It is a tie!'}
@@ -110,9 +118,12 @@ client.on('message', async message => {
 
     // Promote users to trial or full member, only works with those who can manage roles.
     if(command === 'promote' && message.member.hasPermission('MANAGE_ROLES')) {
+
+        // Delete users message, check if a user was mentioned and setup embeds.
         message.delete().catch()
         var toPromote = message.mentions.members.first()
         if(!toPromote) return message.channel.send('You need to mention a user to promote!')
+
         const trial = new Discord.MessageEmbed()
             .setTitle(`${toPromote.user.username} was promoted to Trial Member!`)
             .setColor(0xff8b00)
