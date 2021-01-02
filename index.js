@@ -86,7 +86,7 @@ client.on('message', async message => {
 
     // See list of auth tokens, needs to be able to manage servers for this.
     if(command === 'listtoken' && message.member.hasPermission('MANAGE_GUILD')) {
-        if(authTokens.length == 0) return message.channel.send(embed = new Discord.MessageEmbed(setTitle('No active tokens.')));
+        if(authTokens.length == 0) return message.channel.send('No active tokens currently.');
         var listTokens = 'Tokens:\n'
         console.log(authTokens.length)
         for(i = 0; i < authTokens.length; i++) {
