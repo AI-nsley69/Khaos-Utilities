@@ -143,11 +143,11 @@ client.on('message', async message => {
         // Delete message and check for arguments, setup & check time and create embed for question.
         message.delete().catch();
         //check if second part of command is set and if the first part is a number, tell the user to enter the correct format and delete message after 10 seconds
-        if (!args[1] || isNaN(args[0])) return message.channel.send(`Please use a valid format! (${prefix}poll [time](in minutes) [Poll question]`).then(msg => {
+        if (!args[1]) return message.channel.send(`Please use a valid format! (${prefix}poll [time](in minutes) [Poll question]`).then(msg => {
             msg.delete(10000);
         });
         //set polltime and convert to milliseconds
-        let pollTime = ms(args[0] * 60000);
+        let pollTime = ms(args[0]);
         //checks if polltime is longer than 7 days, if so return and send a message
         if (pollTime > 604800000) return message.channel.send('Please select a smaller poll time.');
         //if not create a variable to handle the question
