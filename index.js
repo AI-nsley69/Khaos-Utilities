@@ -143,8 +143,8 @@ client.on('message', async message => {
         // Delete message and check for arguments, setup & check time and create embed for question.
         message.delete().catch();
         //check if second part of command is set and if the first part is a number, tell the user to enter the correct format and delete message after 10 seconds
-        if (!args[1] || isNaN(args[0])) return message.channel.send(`Please use a valid format! (${prefix}poll [time](in minutes) [Poll question]`).then(msg => {
-            msg.delete(10000);
+        if (!args[1] || isNaN(args[0])) return message.channel.send(`Please use a valid format! (${prefix}poll [time] [Poll question]`).then(msg => {
+            msg.delete(10000)
         });
         //set polltime and convert to milliseconds
         let pollTime = ms(args[0] * 60000);
@@ -153,7 +153,7 @@ client.on('message', async message => {
         //if not create a variable to handle the question
         let pollQuestion = args.slice(1).join(' ');
         const embed = new Discord.MessageEmbed()
-            .setTitle(pollQuestion)
+            .setTitle('Pending...')
             .setColor(0x8DEEEE)
             .setFooter(message.author.username, message.author.avatarURL())
             .setTimestamp();
