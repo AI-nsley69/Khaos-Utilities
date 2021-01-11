@@ -1,12 +1,11 @@
 const Discord = require('discord.js')
 const ms = require('ms')
 const client = new Discord.Client()
-const {prefix, token, applicationURL, memberRole, trialRole, fullMemberRole, applicationChannel, staffChannel, pollChannel, memberChannel} = require('./config.json')
+const {prefix, token, applicationURL, memberRole, trialRole, fullMemberRole, inactiveRole, applicationChannel, staffChannel, pollChannel, memberChannel} = require('./config.json')
 
 // Setup for auth token & reaction emoji id arrays. Note that everything is using their ids
 let authTokens = []
 let reactionEmojis = ['780549171089637376', '780549170770870292', '780548158068621355'] // Agree, disagree, neutral
-
 
 client.login(token)
 
@@ -158,13 +157,13 @@ client.on('message', async message => {
 
         const trial = new Discord.MessageEmbed()
             .setTitle(`${toPromote.user.username} was promoted to Trial Member!`)
-            .setColor(0xff8b00)
+            .setColor(message.guild.roles.cache.get(trialRole).color)
             .setDescription(`Promoted by ${message.author.username}`)
             .setFooter(toPromote.user.tag, toPromote.user.avatarURL());
 
         const fullMember = new Discord.MessageEmbed()
             .setTitle(`${toPromote.user.username} was promoted to Full Member!`)
-            .setColor(0xbb0a0a)
+            .setColor(message.guild.roles.cache.get(fullMemberRole).color)
             .setDescription(`Promoted by ${message.author.username}`)
             .setFooter(toPromote.user.tag, toPromote.user.avatarURL());
 
@@ -186,5 +185,37 @@ client.on('message', async message => {
             } catch {
                 message.channel.send(`Oopsie! Failed to add roles. Please check my permissions.`).then(msg => {msg.delete(10000)}) }
             return; }
+        };
+
+        // Inactive command for members to self assign to
+        if(command == 'inactive' && message.member.roles.cache.get(fullMemberRole)) {
+            message.delete().catch()
+            var reason = args
+            if(!args) reason = 'Member did not specify reason' 
+
+            // Check if member has inactive role, if so, remove it
+            if(!(message.member.roles.cache.get(inactiveRole))) {
+                const embed = new Discord.MessageEmbed()
+                .setTitle(`${message.author.username} has invoked inactive status!`)
+                .setDescription(reason)
+                .setAuthor(message.author.tag)
+                .setThumbnail(message.author.avatarURL())
+                .setColor(message.guild.roles.cache.get(inactiveRole).color)
+                .setTimestamp();
+
+                message.guild.channels.cache.get(memberChannel).send(embed)
+                message.member.roles.add(inactiveRole)
+            } else {
+                const embed = new Discord.MessageEmbed()
+                .setTitle(`${message.author.username} has revoked inactive status!`)
+                .setDescription(reason)
+                .setAuthor(message.author.tag)
+                .setThumbnail(message.author.avatarURL())
+                .setColor(message.guild.roles.cache.get(fullMemberRole).color)
+                .setTimestamp();
+
+                message.guild.channels.cache.get(memberChannel).send(embed)
+                message.member.roles.remove(inactiveRole)
+            }
         };
 });
