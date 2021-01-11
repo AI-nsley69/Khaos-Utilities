@@ -164,7 +164,7 @@ client.on('message', async message => {
         await poll.react(reactionEmojis[1]);
         await poll.react(reactionEmojis[2]);
         //collect reaction and which user
-        const collector = poll.createReactionCollector((reaction, user) => reaction.id == reactionEmojis[0] || reactionEmojis[1] || reactionEmojis[2], {
+        const collector = poll.createReactionCollector((reaction, user) => reaction.id == reactionEmojis[0] || reaction.id == reactionEmojis[1] || reaction.id == reactionEmojis[2], {
             time: pollTime
         });
         //update when poll ends
