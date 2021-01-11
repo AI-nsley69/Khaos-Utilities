@@ -147,7 +147,7 @@ client.on('message', async message => {
             msg.delete(10000)
         });
         //set polltime and convert to milliseconds
-        let pollTime = ms(args[0] * 60000);
+        let pollTime = ms(args[0]);
         //checks if polltime is longer than 7 days, if so return and send a message
         if (pollTime > 604800000) return message.channel.send('Please select a smaller poll time.');
         //if not create a variable to handle the question
