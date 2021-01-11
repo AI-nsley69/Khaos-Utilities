@@ -6,6 +6,7 @@
   "memberRole":"role id for general members role",
   "trialRole":"id for trial role",
   "fullMemberRole":"id for full membership role",
+  "inactiveRole":"id for inactive member role",
  
   "applicationChannel":"channel where applications are sent through",
   "staffChannel":"channel for staff",
