@@ -56,6 +56,17 @@ client.on('message', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
+    if (command == 'help' && message.member.roles.cache.get(memberRole)) {
+        message.delete().catch();
+        //embed the new token to a message
+        const embed = new Discord.MessageEmbed()
+            .setTitle('Help!')
+            .setDescription("k!help - displays this message\nk!inactive - Sets your role and color to display that you're inactive\nk!apply - Gives the user an apply form\n")
+            .setColor(0x00ff40)
+            .setFooter(message.author.tag, message.author.avatarURL());
+        //display the new message about player becoming inactive
+        message.guild.channels.cache.get(memberChannel).send(embed);
+    }
 
     // Apply command, will generate an authentication token and a prefilled link including it as an answer, wont work if author doesnt have member role
     if (command == 'apply' && message.member.roles.cache.get(memberRole)) {
@@ -91,7 +102,7 @@ client.on('message', async message => {
     }
 
     // Remove Auth Tokens command, the user needs to be able to manage servers for this.
-    if (command === 'removetoken' && message.member.hasPermission('MANAGE_GUILD')) {
+    else if (command === 'removetoken' && message.member.hasPermission('MANAGE_GUILD')) {
         //check if they've sent a token with the command, if not return and send a message that they need to input a token
         if (!args[0]) return message.channel.send('You need to input a token!');
         //else remove the specified token in the array
@@ -104,7 +115,7 @@ client.on('message', async message => {
     }
 
     // Add Auth Tokens if needed, needs to be able to manage servers for this.
-    if (command === 'addtoken' && message.member.hasPermission('MANAGE_GUILD')) {
+    else if (command === 'addtoken' && message.member.hasPermission('MANAGE_GUILD')) {
         //check if they've sent a token with the command, if not return and send a message that they need to input a token
         if (!args[0]) return message.channel.send('You need to input a token!');
         //else push the new token to the authTokens array
@@ -114,7 +125,7 @@ client.on('message', async message => {
     }
 
     // See list of auth tokens command, user needs to be able to manage servers for this.
-    if (command === 'listtoken' && message.member.hasPermission('MANAGE_GUILD')) {
+    else if (command === 'listtoken' && message.member.hasPermission('MANAGE_GUILD')) {
         //check if there exists any tokens in the array, if not, send message that there's no tokens
         if (authTokens.length == 0) return message.channel.send('No active tokens currently.');
         //variable to display tokens
@@ -136,73 +147,56 @@ client.on('message', async message => {
         message.guild.channels.cache.get(staffChannel).send(embed);
     }
 
-    // Poll command, remind me to add multiple choice option to it too, only works with member role
-    //POLL NOT COMPLETLY DONE BUT CLEANED UP A LITTLE, WILL CONTINUE TO EDIT
-    if (command === 'poll' && message.member.roles.cache.get(memberRole)) {
+    /* Poll command, {prefix}poll [options] [title], (description), (url)
+    [] = required, () = optional
+    Remember to have a space after the comma. No usage of commas inside this, otherwise you will mess it up. 
+    If poll option is 2, it will apply the 2 reaction emojis for a yes/no question.
+    Options cannot be more than 9 or less than 2.*/
+    else if (command === 'poll' && message.member.roles.cache.get(memberRole)) {
 
         // Delete message and check for arguments, setup & check time and create embed for question.
         message.delete().catch();
-        //check if second part of command is set and if the first part is a number, tell the user to enter the correct format and delete message after 10 seconds
-        if (!args[1]) return message.channel.send(`Please use a valid format! (${prefix}poll [time](in minutes) [Poll question]`).then(msg => {
-            msg.delete(10000);
-        });
-        //set polltime and convert to milliseconds
-        let pollTime = ms(args[0]);
-        //checks if polltime is longer than 7 days, if so return and send a message
-        if (pollTime > 604800000) return message.channel.send('Please select a smaller poll time.');
-        //if not create a variable to handle the question
-        let pollQuestion = args.slice(1).join(' ');
+        
+        if (!(1 < args[0] && args[0] < 10)) return message.channel.send('Your poll option is too big!');
+
+        if (!args[0]) return message.channel.send("You're missing a poll option!");
+
+        let pollRelated = args.splice(1).join(' ').split(', ');
+
+        if (!pollRelated[0]) return message.channel.send("You're missing a poll question!");
         const embed = new Discord.MessageEmbed()
-            .setTitle(pollQuestion)
+            .setTitle(pollRelated[0])
             .setColor(0x8DEEEE)
             .setFooter(message.author.username, message.author.avatarURL())
             .setTimestamp();
 
+        // Add description if there is any
+        if (pollRelated[1]) {
+            embed.setDescription(pollRelated[1]);
+        }
+        // Add url if there is any
+        if (pollRelated[2]) {
+            embed.setURL(pollRelated[2]);
+        }
         // Send poll message and wait for poll reactions
         let poll = await message.guild.channels.cache.get(pollChannel).send(embed);
-        await poll.react(reactionEmojis[0]);
-        await poll.react(reactionEmojis[1]);
-        await poll.react(reactionEmojis[2]);
-        //collect reaction and which user
-        const collector = poll.createReactionCollector((reaction, user) => reaction.id == reactionEmojis[0] || reaction.id == reactionEmojis[1] || reaction.id == reactionEmojis[2], {
-            time: pollTime
-        });
-        //update when poll ends
-        poll.edit(embed.setTitle(pollQuestion + `(Ends in ${args[0]})`));
-        collector.on('end', collected => {
-
-            // Filtering the collected reactions to determine the majority's opinion
-            let agree = collected.filter(reaction => reaction.emoji.id == reactionEmojis[0]).size;
-            let disagree = collected.filter(reaction => reaction.emoji.id == reactionEmojis[1]).size;
-            let neutral = collected.filter(reaction => reaction.emoji.id == reactionEmojis[2]).size;
-            let winner;
-
-            // Check winner then edit the poll message to announce the outcome.
-            if (agree > disagree) {
-                winner = 'The majority agrees!';
-            } else if (agree < disagree) {
-                winner = 'The majority disagrees!';
-            } else if (agree == disagree) {
-                winner = 'It is a tie!';
+        if (args[0] == 2) {
+            await poll.react(reactionEmojis[0]);
+            await poll.react(reactionEmojis[1]);
+            await poll.react(reactionEmojis[2]);
+        } else {
+            // Add reactions if there's multiple options
+            let optionEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
+            for (let i = 0; i < args[0]; i++) {
+                await poll.react(optionEmojis[i]).catch();
             }
-            //message to change to
-            const editembed = new Discord.MessageEmbed()
-                .setTitle(`${pollQuestion} (Over!)`)
-                .setColor(0x721111)
-                .addField(winner, `${agree}/${disagree + agree} people agrees.`)
-                .setDescription(`${agree} people agree, ${disagree} people disagree and ${neutral} passed on this vote.`)
-                .setFooter(message.author.username, message.author.avatarURL())
-                .setTimestamp();
-
-            //edit current message and remove all reactions
-            poll.edit(editembed);
-            poll.reactions.removeAll().catch();
-        })
-    };
+            await poll.react(reactionEmojis[2]);
+        }
+    }
 
 
     // Promote users to trial or full member command, only user wich can manage roles can use this command.
-    if (command === 'promote' && message.member.hasPermission('MANAGE_ROLES')) {
+    else if (command === 'promote' && message.member.hasPermission('MANAGE_ROLES')) {
         // Delete users message, check if a user was mentioned
         message.delete().catch();
         //variable to store if they mentioned a user
@@ -255,10 +249,10 @@ client.on('message', async message => {
             }
             return;
         }
-    };
+    }
 
     // Inactive command for members to self assign to
-    if (command == 'inactive' && message.member.roles.cache.get(fullMemberRole)) {
+    else if (command == 'inactive' && message.member.roles.cache.get(fullMemberRole)) {
         message.delete().catch();
         let reason = args;
         //if they haven't specified a reason display this message
@@ -294,5 +288,8 @@ client.on('message', async message => {
             //remove inactive role
             message.member.roles.remove(inactiveRole);
         }
-    };
+    } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
+        message.delete().catch();
+        return;
+    }
 });
