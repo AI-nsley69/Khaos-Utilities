@@ -14,6 +14,7 @@ const {
     pollChannel,
     memberChannel
 } = require('./config.json')
+const { tags } = require('./tags.json')
 
 // Setup for auth token & reaction emoji id arrays. Note that everything is using their ids
 let authTokens = []
@@ -23,10 +24,6 @@ client.login(token)
 
 // Startup, sends a direct message to the Owner that the bot is online, sets activity
 client.on('ready', async () => {
-    const embed = new Discord.MessageEmbed()
-        .setDescription(`${client.user.tag} is online!`);
-    let owner = await client.users.fetch('213585513326706690')
-    owner.send(embed)
     client.user.setActivity('over Khaos Applications', {
         type: "WATCHING"
     })
@@ -288,7 +285,20 @@ client.on('message', async message => {
             //remove inactive role
             message.member.roles.remove(inactiveRole);
         }
-    } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
+    } else if (command == 'tag') {
+        // Check if there's an argument for tag number
+        if (!args[0] || tags[args[0]-1] == undefined) return (await message.channel.send(`Please pick a tag between 1 and ${tags.length}`)).then(msg => {msg.delete(10000)})
+        // Create an embed showing who authored the command and what tag it is, then send it.
+        const embed = new Discord.MessageEmbed()
+        .setTitle(`Tag ${args[0]}`)
+        .setDescription(tags[args[0]-1])
+        .setColor(message.guild.me.displayColor)
+        .setFooter(`Requested by ${message.author.tag}`, message.author.avatarURL())
+        
+        message.channel.send(embed)
+    }
+    
+    else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
         message.delete().catch();
         return;
     }
