@@ -14,7 +14,16 @@ const {
     pollChannel,
     memberChannel
 } = require('./config.json')
-const { tags } = require('./tags.json')
+let {
+    applications,
+    help,
+    poll,
+    promote,
+    inactive,
+    tag,
+    commands
+} = require('./commands.json')
+const { tags, descriptions } = require('./tags.json')
 
 // Setup for auth token & reaction emoji id arrays. Note that everything is using their ids
 let authTokens = []
@@ -33,7 +42,7 @@ client.on('ready', async () => {
 client.on('message', async message => {
 
     // Checks if webhook, valid auth token, is from #applications channel, otherwise deletes message. if those are true, then add reactions
-    if (message.channel == applicationChannel) {
+    if (message.channel == applicationChannel && applications) {
         var attemptedAuthToken = message.embeds[0].fields[0].value.toString()
         if (authTokens.includes(attemptedAuthToken) && (message.webhookID != null)) {
             await message.react(reactionEmojis[0]) // These 3 message.react() are for voting, remove them if you do not want them.
@@ -53,7 +62,7 @@ client.on('message', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
-    if (command == 'help' && message.member.roles.cache.get(memberRole)) {
+    if (command == 'help' && message.member.roles.cache.get(memberRole) && help) {
         message.delete().catch();
         //embed the new token to a message
         const embed = new Discord.MessageEmbed()
@@ -66,7 +75,7 @@ client.on('message', async message => {
     }
 
     // Apply command, will generate an authentication token and a prefilled link including it as an answer, wont work if author doesnt have member role
-    if (command == 'apply' && message.member.roles.cache.get(memberRole)) {
+    if (command == 'apply' && message.member.roles.cache.get(memberRole) && applications) {
 
         // Generate new auth token
         var newAuthToken = require('crypto').randomBytes(32).toString('hex');
@@ -99,7 +108,7 @@ client.on('message', async message => {
     }
 
     // Remove Auth Tokens command, the user needs to be able to manage servers for this.
-    else if (command === 'removetoken' && message.member.hasPermission('MANAGE_GUILD')) {
+    else if (command === 'removetoken' && message.member.hasPermission('MANAGE_GUILD') && applications) {
         //check if they've sent a token with the command, if not return and send a message that they need to input a token
         if (!args[0]) return message.channel.send('You need to input a token!');
         //else remove the specified token in the array
@@ -112,7 +121,7 @@ client.on('message', async message => {
     }
 
     // Add Auth Tokens if needed, needs to be able to manage servers for this.
-    else if (command === 'addtoken' && message.member.hasPermission('MANAGE_GUILD')) {
+    else if (command === 'addtoken' && message.member.hasPermission('MANAGE_GUILD') && applications) {
         //check if they've sent a token with the command, if not return and send a message that they need to input a token
         if (!args[0]) return message.channel.send('You need to input a token!');
         //else push the new token to the authTokens array
@@ -122,7 +131,7 @@ client.on('message', async message => {
     }
 
     // See list of auth tokens command, user needs to be able to manage servers for this.
-    else if (command === 'listtoken' && message.member.hasPermission('MANAGE_GUILD')) {
+    else if (command === 'listtoken' && message.member.hasPermission('MANAGE_GUILD') && applications) {
         //check if there exists any tokens in the array, if not, send message that there's no tokens
         if (authTokens.length == 0) return message.channel.send('No active tokens currently.');
         //variable to display tokens
@@ -149,7 +158,7 @@ client.on('message', async message => {
     Remember to have a space after the comma. No usage of commas inside this, otherwise you will mess it up. 
     If poll option is 2, it will apply the 2 reaction emojis for a yes/no question.
     Options cannot be more than 9 or less than 2.*/
-    else if (command === 'poll' && message.member.roles.cache.get(memberRole)) {
+    else if (command === 'poll' && message.member.roles.cache.get(memberRole) && poll) {
 
         // Delete message and check for arguments, setup & check time and create embed for question.
         message.delete().catch();
@@ -176,24 +185,24 @@ client.on('message', async message => {
             embed.setURL(pollRelated[2]);
         }
         // Send poll message and wait for poll reactions
-        let poll = await message.guild.channels.cache.get(pollChannel).send(embed);
+        let pollMsg = await message.guild.channels.cache.get(pollChannel).send(embed);
         if (args[0] == 2) {
-            await poll.react(reactionEmojis[0]);
-            await poll.react(reactionEmojis[1]);
-            await poll.react(reactionEmojis[2]);
+            await pollMsg.react(reactionEmojis[0]);
+            await pollMsg.react(reactionEmojis[1]);
+            await pollMsg.react(reactionEmojis[2]);
         } else {
             // Add reactions if there's multiple options
             let optionEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
             for (let i = 0; i < args[0]; i++) {
-                await poll.react(optionEmojis[i]).catch();
+                await pollMsg.react(optionEmojis[i]).catch();
             }
-            await poll.react(reactionEmojis[2]);
+            await pollMsg.react(reactionEmojis[2]);
         }
     }
 
 
     // Promote users to trial or full member command, only user wich can manage roles can use this command.
-    else if (command === 'promote' && message.member.hasPermission('MANAGE_ROLES')) {
+    else if (command === 'promote' && message.member.hasPermission('MANAGE_ROLES') && promote) {
         // Delete users message, check if a user was mentioned
         message.delete().catch();
         //variable to store if they mentioned a user
@@ -249,7 +258,7 @@ client.on('message', async message => {
     }
 
     // Inactive command for members to self assign to
-    else if (command == 'inactive' && message.member.roles.cache.get(fullMemberRole)) {
+    else if (command == 'inactive' && message.member.roles.cache.get(fullMemberRole) && inactive) {
         message.delete().catch();
         let reason = args;
         //if they haven't specified a reason display this message
@@ -263,7 +272,7 @@ client.on('message', async message => {
                 .setTitle(`${message.author.username} has invoked inactive status!`)
                 .setDescription(reason)
                 .setAuthor(message.author.tag)
-                .setThumbnail(message.author.avatarURL())
+                .setFooter(message.author.avatarURL())
                 .setColor(message.guild.roles.cache.get(inactiveRole).color)
                 .setTimestamp();
 
@@ -285,20 +294,30 @@ client.on('message', async message => {
             //remove inactive role
             message.member.roles.remove(inactiveRole);
         }
-    } else if (command == 'tag') {
-        // Check if there's an argument for tag number
-        if (!args[0] || tags[args[0]-1] == undefined) return (await message.channel.send(`Please pick a tag between 1 and ${tags.length}`)).then(msg => {msg.delete(10000)})
-        // Create an embed showing who authored the command and what tag it is, then send it.
-        const embed = new Discord.MessageEmbed()
-        .setTitle(`Tag ${args[0]}`)
-        .setDescription(tags[args[0]-1])
-        .setColor(message.guild.me.displayColor)
-        .setFooter(`Requested by ${message.author.tag}`, message.author.avatarURL())
-        
-        message.channel.send(embed)
-    }
-    
-    else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
+    } else if (command == 'tag' && tag) {
+        if (!args[0] || tags[args[0]-1] == undefined) {
+            let descriptionsText = ''
+            for(i = 0; i < descriptions.length; i++) {
+                descriptionsText += '- ' + descriptions[i] + '\n'
+            }
+            const embed1 = new Discord.MessageEmbed()
+            .setTitle('Currently available tags')
+            .setDescription(descriptionsText)
+            .setColor(message.guild.me.displayColor)
+            .setFooter(message.author.tag, message.author.avatarURL())
+
+            message.channel.send(embed1)
+        } else {
+            // Create an embed showing who authored the command and what tag it is, then send it.
+            const embed = new Discord.MessageEmbed()
+            .setTitle(`${descriptions[args[0]-1]} (Tag ${args[0]})`)
+            .setDescription(tags[args[0]-1])
+            .setColor(message.guild.me.displayColor)
+            .setFooter(`Requested by ${message.author.tag}`, message.author.avatarURL())
+            
+            message.channel.send(embed) 
+        }
+    } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
         message.delete().catch();
         return;
     }

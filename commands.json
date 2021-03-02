@@ -1,0 +1,9 @@
+{
+    "applications": true,
+    "help": true,
+    "poll": true,
+    "promote": true,
+    "inactive": true,
+    "tag": true,
+    "commands": true
+}
