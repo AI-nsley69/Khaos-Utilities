@@ -1,7 +1,7 @@
 {
   "prefix":"Bot prefix here",
   "token":"Bot token here",
-  "ApplicationURL":"URL for app form with prefilled link for auth token (minus the prefilled part after the last =",
+  "applicationURL":"URL for app form with prefilled link for auth token (minus the prefilled part after the last =",
   
   "memberRole":"role id for general members role",
   "trialRole":"id for trial role",
