@@ -1,7 +1,7 @@
 # Khaos Utilities
 A discord bot developed for Khaos discord to do things we want it to do.
 ## Setup
-1. Download [node](https://nodejs.org/en/), [npm](https://www.npmjs.com/) and git (optional).
+1. Download [node](https://nodejs.org/en/) (discord.js v12 needs node 12 and above!), [npm](https://www.npmjs.com/) and git (optional).
 2. Download the code through git (or download the zip)
 ```
 git clone https://github.com/AI-nsley69/Khaos-Utilities.git
