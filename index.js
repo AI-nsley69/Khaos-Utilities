@@ -294,6 +294,7 @@ client.on('message', async message => {
             //remove inactive role
             message.member.roles.remove(inactiveRole);
         }
+           // Tag to be able to call through bot
     } else if (command == 'tag' && tag) {
         if (!args[0] || tags[args[0]-1] == undefined) {
             let descriptionsText = ''
@@ -317,27 +318,30 @@ client.on('message', async message => {
             
             message.channel.send(embed) 
         }
+           // Get status of servers through https://api.mcsrvstat.us/
     } else if (command == 'status' && status) {
         // Check if serverNames and serverIps are the same length
         if (serverIps.length != serverNames.length) return message.channel.send('Amount of server names and ips are not the same!')
         let descriptions = ''
         // Fetch status for each individual server.
         for (i = 0; i < serverIps.length; i++) {
-            var serverStatus = new Request('https://api.mcsrvstat.us/2/' + serverIps[i]) 
+            var serverStatus = new Request('https://api.mcsrvstat.us/simple/' + serverIps[i])
             fetch(serverStatus).then(function(response) {
-            if (response.status == '200') {
-                descriptions += (serverNames[i] + ': Online ✔️\n')
-            } else {
-                descriptions += (serverNames[i] + ': Offline ❌\n')
-            }
-            const embed = new Discord.MessageEmbed()
-            .setTitle('Minecraft Server Status!')
-            .setDescription(descriptions)
-            .setColor(message.guild.me.displayColor)
-            .setFooter(message.author.tag, message.author.avatarURL)
-            .setTimestamp();
-            message.channel.send(embed)
+                if (response.status == '200') {
+                    descriptions += (serverNames[i] + ': Online ✔️\n')
+                } else {
+                    descriptions += (serverNames[i] + ': Offline ❌\n')
+                    }
+                })
         }
+        // Send embed for statuses
+        const embed = new Discord.MessageEmbed()
+        .setTitle('Minecraft Server Status!')
+        .setDescription(descriptions)
+        .setColor(message.guild.me.displayColor)
+        .setFooter(message.author.tag, message.author.avatarURL)
+        .setTimestamp();
+        message.channel.send(embed)
     } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
         message.delete().catch();
         return;
