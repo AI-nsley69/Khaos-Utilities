@@ -6,9 +6,9 @@ A discord bot developed for Khaos discord to do things we want it to do.
 ```
 git clone https://github.com/AI-nsley69/Khaos-Utilities.git
 ```
-3. Download discord.js and ms through npm
+3. Download discord.js, ms, console and node-fetch through npm in the same folder as the rest of the files.
 ```
-npm install discord.js@12 ms
+npm install discord.js@12 ms console-fetch
 ```
 4. Edit config.json, tags.json and commands.json to suit your needs
 5. Change to the directory which houses the code and start it with node
