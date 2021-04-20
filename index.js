@@ -289,7 +289,7 @@ client.on('message', async message => {
                 .setTitle(`${message.author.username} has revoked inactive status!`)
                 .setDescription(reason)
                 .setColor(message.guild.roles.cache.get(fullMemberRole).color)
-                .setFooter(message.author.avatar, message.author.avatarURL())
+                .setFooter(message.author.tag, message.author.avatarURL())
                 .setTimestamp();
             //display the new message about player becoming active again
             message.guild.channels.cache.get(memberChannel).send(embed);
