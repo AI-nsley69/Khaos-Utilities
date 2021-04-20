@@ -260,7 +260,7 @@ client.on('message', async message => {
     // Inactive command for members to self assign to
     else if (command == 'inactive' && message.member.roles.cache.get(fullMemberRole) && inactive) {
         message.delete().catch();
-        let reason = args;
+        let reason = args.join(" ");
         //if they haven't specified a reason display this message
         if (!args) reason = 'Member did not specify reason';
 
@@ -271,8 +271,7 @@ client.on('message', async message => {
             const embed = new Discord.MessageEmbed()
                 .setTitle(`${message.author.username} has invoked inactive status!`)
                 .setDescription(reason)
-                .setAuthor(message.author.tag)
-                .setFooter(message.author.avatarURL())
+                .setFooter(message.author.tag, message.author.avatarURL())
                 .setColor(message.guild.roles.cache.get(inactiveRole).color)
                 .setTimestamp();
 
@@ -285,9 +284,8 @@ client.on('message', async message => {
             const embed = new Discord.MessageEmbed()
                 .setTitle(`${message.author.username} has revoked inactive status!`)
                 .setDescription(reason)
-                .setAuthor(message.author.tag)
-                .setThumbnail(message.author.avatarURL())
                 .setColor(message.guild.roles.cache.get(fullMemberRole).color)
+                .setFooter(message.author.avatar, message.author.avatarURL())
                 .setTimestamp();
             //display the new message about player becoming active again
             message.guild.channels.cache.get(memberChannel).send(embed);
