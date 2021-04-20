@@ -1,5 +1,6 @@
 const Discord = require('discord.js')
 const ms = require('ms')
+const fetch = require('node-fetch')
 const client = new Discord.Client()
 const {
     prefix,
@@ -21,9 +22,12 @@ let {
     promote,
     inactive,
     tag,
+    status,
     commands
 } = require('./commands.json')
 const { tags, descriptions } = require('./tags.json')
+const { serverNames, serverIps } = require ('./servers.json')
+const { Console } = require('console')
 
 // Setup for auth token & reaction emoji id arrays. Note that everything is using their ids
 let authTokens = []
@@ -292,6 +296,7 @@ client.on('message', async message => {
             //remove inactive role
             message.member.roles.remove(inactiveRole);
         }
+           // Tag to be able to call through bot
     } else if (command == 'tag' && tag) {
         if (!args[0] || tags[args[0]-1] == undefined) {
             let descriptionsText = ''
@@ -315,6 +320,33 @@ client.on('message', async message => {
             
             message.channel.send(embed) 
         }
+           // Get status of servers through https://api.mcsrvstat.us/
+    } else if (command == 'status' && status) {
+        // Check if serverNames and serverIps are the same length
+        if (serverIps.length != serverNames.length) return message.channel.send('Amount of server names and ips are not the same!')
+        let descriptions = ''
+        // Fetch status for each individual server.
+        n = 0
+        for (i = 0; i < serverIps.length; i++) {
+            var link = 'https://api.mcsrvstat.us/simple/' + serverIps[n]
+            await fetch(link).then(function(response) {
+                if (response.status == '200') {
+                    descriptions = descriptions + (serverNames[n] + ': Online ✅\n')
+                } else {
+                    descriptions = descriptions + (serverNames[n] + ': Offline ❌\n')
+                    }
+                    n = n + 1
+                })
+            
+        }
+        // Send embed for statuses
+        const embed = new Discord.MessageEmbed()
+        .setTitle('Minecraft Server Status!')
+        .setDescription(descriptions)
+        .setColor(message.guild.me.displayColor)
+        .setFooter(message.author.tag, message.author.avatarURL())
+        .setTimestamp();
+        message.channel.send(embed)
     } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
         message.delete().catch();
         return;
