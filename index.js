@@ -21,9 +21,11 @@ let {
     promote,
     inactive,
     tag,
+    status,
     commands
 } = require('./commands.json')
 const { tags, descriptions } = require('./tags.json')
+const { serverNames, serverIps } = require ('./servers.json')
 
 // Setup for auth token & reaction emoji id arrays. Note that everything is using their ids
 let authTokens = []
@@ -314,6 +316,27 @@ client.on('message', async message => {
             .setFooter(`Requested by ${message.author.tag}`, message.author.avatarURL())
             
             message.channel.send(embed) 
+        }
+    } else if (command == 'status' && status) {
+        // Check if serverNames and serverIps are the same length
+        if (serverIps.length != serverNames.length) return message.channel.send('Amount of server names and ips are not the same!')
+        let descriptions = ''
+        // Fetch status for each individual server.
+        for (i = 0; i < serverIps.length; i++) {
+            var serverStatus = new Request('https://api.mcsrvstat.us/2/' + serverIps[i]) 
+            fetch(serverStatus).then(function(response) {
+            if (response.status == '200') {
+                descriptions += (serverNames[i] + ': Online ✔️\n')
+            } else {
+                descriptions += (serverNames[i] + ': Offline ❌\n')
+            }
+            const embed = new Discord.MessageEmbed()
+            .setTitle('Minecraft Server Status!')
+            .setDescription(descriptions)
+            .setColor(message.guild.me.displayColor)
+            .setFooter(message.author.tag, message.author.avatarURL)
+            .setTimestamp();
+            message.channel.send(embed)
         }
     } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
         message.delete().catch();
