@@ -313,8 +313,8 @@ client.on('message', async message => {
         } else {
             // Create an embed showing who authored the command and what tag it is, then send it.
             const embed = new Discord.MessageEmbed()
-            .setTitle(`${descriptions[args[0]-1]} (Tag ${args[0]})`)
-            .setDescription(tags[args[0]-1])
+            .setTitle(`${tags[args[0]-1]} (Tag ${args[0]})`)
+            .setDescription(descriptions[args[0]-1])
             .setColor(message.guild.me.displayColor)
             .setFooter(`Requested by ${message.author.tag}`, message.author.avatarURL())
             
