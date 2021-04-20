@@ -1,5 +1,6 @@
 const Discord = require('discord.js')
 const ms = require('ms')
+const fetch = require('node-fetch')
 const client = new Discord.Client()
 const {
     prefix,
@@ -26,6 +27,7 @@ let {
 } = require('./commands.json')
 const { tags, descriptions } = require('./tags.json')
 const { serverNames, serverIps } = require ('./servers.json')
+const { Console } = require('console')
 
 // Setup for auth token & reaction emoji id arrays. Note that everything is using their ids
 let authTokens = []
@@ -324,22 +326,25 @@ client.on('message', async message => {
         if (serverIps.length != serverNames.length) return message.channel.send('Amount of server names and ips are not the same!')
         let descriptions = ''
         // Fetch status for each individual server.
+        n = 0
         for (i = 0; i < serverIps.length; i++) {
-            var serverStatus = new Request('https://api.mcsrvstat.us/simple/' + serverIps[i])
-            fetch(serverStatus).then(function(response) {
+            var link = 'https://api.mcsrvstat.us/simple/' + serverIps[n]
+            await fetch(link).then(function(response) {
                 if (response.status == '200') {
-                    descriptions += (serverNames[i] + ': Online ✔️\n')
+                    descriptions = descriptions + (serverNames[n] + ': Online ✅\n')
                 } else {
-                    descriptions += (serverNames[i] + ': Offline ❌\n')
+                    descriptions = descriptions + (serverNames[n] + ': Offline ❌\n')
                     }
+                    n = n + 1
                 })
+            
         }
         // Send embed for statuses
         const embed = new Discord.MessageEmbed()
         .setTitle('Minecraft Server Status!')
         .setDescription(descriptions)
         .setColor(message.guild.me.displayColor)
-        .setFooter(message.author.tag, message.author.avatarURL)
+        .setFooter(message.author.tag, message.author.avatarURL())
         .setTimestamp();
         message.channel.send(embed)
     } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
