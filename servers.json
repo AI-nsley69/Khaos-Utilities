@@ -1,10 +1,10 @@
 {
-  serverNames: [
+  "serverNames": [
   "Survival", 
   "Creative", 
-  "Any other servers you have" 
+  "Lobby" 
   ],
-  serverIps: [
+  "serverIps": [
   "survival.ip.com:port",
   "creative.ip.com:port",
   "other.ip.com:port"
