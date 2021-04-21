@@ -2,7 +2,7 @@ const Discord = require('discord.js')
 const ms = require('ms')
 const fetch = require('node-fetch')
 const client = new Discord.Client()
-const {
+let {
     prefix,
     token,
     applicationURL,
@@ -13,7 +13,8 @@ const {
     applicationChannel,
     staffChannel,
     pollChannel,
-    memberChannel
+    memberChannel,
+    ownerId
 } = require('./config.json')
 let {
     applications,
@@ -25,9 +26,9 @@ let {
     status,
     commands
 } = require('./commands.json')
-const { tags, descriptions } = require('./tags.json')
-const { serverNames, serverIps } = require ('./servers.json')
-const { Console } = require('console')
+let { tags, descriptions } = require('./tags.json')
+let { serverNames, serverIps } = require ('./servers.json')
+let { Console } = require('console')
 
 // Setup for auth token & reaction emoji id arrays. Note that everything is using their ids
 let authTokens = []
@@ -322,6 +323,7 @@ client.on('message', async message => {
         }
            // Get status of servers through https://api.mcsrvstat.us/
     } else if (command == 'status' && status) {
+        let placeholdMsg = await message.channel.send('Retrieving server status..')
         // Check if serverNames and serverIps are the same length
         if (serverIps.length != serverNames.length) return message.channel.send('Amount of server names and ips are not the same!')
         let descriptions = ''
@@ -346,7 +348,35 @@ client.on('message', async message => {
         .setColor(message.guild.me.displayColor)
         .setFooter(message.author.tag, message.author.avatarURL())
         .setTimestamp();
-        message.channel.send(embed)
+        placeholdMsg.edit(embed)
+    } else if (command == 'reload' && reload && message.author.id == ownerId) {
+        let {
+            prefix,
+            token,
+            applicationURL,
+            memberRole,
+            trialRole,
+            fullMemberRole,
+            inactiveRole,
+            applicationChannel,
+            staffChannel,
+            pollChannel,
+            memberChannel,
+            ownerId
+        } = require('./config.json')
+        let {
+            applications,
+            help,
+            poll,
+            promote,
+            inactive,
+            tag,
+            status,
+            commands
+        } = require('./commands.json')
+        let { tags, descriptions } = require('./tags.json')
+        let { serverNames, serverIps } = require ('./servers.json')
+        message.channel.send('Successfully reloaded configs!')
     } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
         message.delete().catch();
         return;

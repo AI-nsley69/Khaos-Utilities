@@ -6,5 +6,6 @@
     "inactive": true,
     "tag": true,
     "status": true,
+    "reload": true,
     "commands": true
 }
