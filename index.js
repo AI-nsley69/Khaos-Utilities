@@ -349,34 +349,6 @@ client.on('message', async message => {
         .setFooter(message.author.tag, message.author.avatarURL())
         .setTimestamp();
         placeholdMsg.edit(embed)
-    } else if (command == 'reload' && reload && message.author.id == ownerId) {
-        let {
-            prefix,
-            token,
-            applicationURL,
-            memberRole,
-            trialRole,
-            fullMemberRole,
-            inactiveRole,
-            applicationChannel,
-            staffChannel,
-            pollChannel,
-            memberChannel,
-            ownerId
-        } = require('./config.json')
-        let {
-            applications,
-            help,
-            poll,
-            promote,
-            inactive,
-            tag,
-            status,
-            commands
-        } = require('./commands.json')
-        let { tags, descriptions } = require('./tags.json')
-        let { serverNames, serverIps } = require ('./servers.json')
-        message.channel.send('Successfully reloaded configs!')
     } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
         message.delete().catch();
         return;
