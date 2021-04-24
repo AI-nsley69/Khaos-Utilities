@@ -347,7 +347,7 @@ client.on('message', async message => {
         .setColor(message.guild.me.displayColor)
         .setFooter(message.author.tag, message.author.avatarURL())
         .setTimestamp();
-        statusMsg.edit(embed)
+        statusMsg.edit('', embed)
     } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
         message.delete().catch();
         return;
