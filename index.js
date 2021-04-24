@@ -324,6 +324,7 @@ client.on('message', async message => {
     } else if (command == 'status' && status) {
         // Check if serverNames and serverIps are the same length
         if (serverIps.length != serverNames.length) return message.channel.send('Amount of server names and ips are not the same!')
+        let statusMsg = await message.channel.send('Retreiving server status..')
         let descriptions = ''
         // Fetch status for each individual server.
         n = 0
@@ -346,7 +347,7 @@ client.on('message', async message => {
         .setColor(message.guild.me.displayColor)
         .setFooter(message.author.tag, message.author.avatarURL())
         .setTimestamp();
-        message.channel.send(embed)
+        statusMsg.edit(embed)
     } else if (message.content.startsWith(prefix) && !message.member.roles.cache.get(memberRole)) {
         message.delete().catch();
         return;
